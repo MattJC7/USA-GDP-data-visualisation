@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type ="text/css" href="./styles.css" />
+    <script type="module">
+        import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm"
+
+        const w = 1000
+        const h = 500
+        const padding = 60
+        const svg = d3
+                    .select("div")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h)
+        
+        let tooltip = d3.select("body").append("div")
+                            .attr("id", "tooltip")
+                            .attr("class", "tooltip")
+                            .style("opacity", 0) 
+
+        function dataUpdate (data){
+
+            const dataset = data.data
+            const quarterData = dataset.map((value, index) => {
+                switch(value[0].substring(5, 7)){
+                    case "01":
+                        return value.concat(`${value[0].substring(0, 4)} Q1`)
+                        break;
+                    case "04":
+                        return value.concat(`${value[0].substring(0, 4)} Q2`)
+                        break;
+                    case "07": 
+                        return value.concat(`${value[0].substring(0, 4)} Q3`)
+                        break;
+                    case "10": 
+                        return value.concat(`${value[0].substring(0, 4)} Q4`)
+                        break;
+                }
+            })
+            render(quarterData)
+        }
+
+        function render (data) {
+            const dataset = data
+
+            const xScale = d3.scaleTime()
+                            .domain(d3.extent(dataset, (d) => {return new Date(d[0])}))
+                            .range([padding, w - padding])
+
+            const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(dataset, (d) => d[1])])
+                    .range([h - padding, padding])
+            
+            svg.selectAll("rect")
+                .data(dataset)
+                .enter()
+                .append("rect")
+                .attr("x", (d, i) => xScale(new Date(d[0])))
+                .attr("y", (d, i) => yScale(d[1]))
+                .attr("data-date", (d, i) => d[0])
+                .attr("data-gdp", (d, i) => d[1])
+                .attr("width", 4)
+                .attr("height", (d) => h - yScale(d[1]) - padding)
+                .attr("fill", "#3399ff")
+                .attr("class", "bar")
+                .on("mouseover", (event, d, i) => {
+                    tooltip.attr("data-date", d[0])
+                    tooltip.transition().duration(100).style("opacity", .9);
+                    tooltip.html(`${d[2]}<br>$${d[1]} Billion`).style("left", (event.pageX) + "px").style("top", (event.pageY) + "px")
+                })
+                .on("mouseout", (d) => {
+                    tooltip.transition().duration(200).style("opacity", 0)
+                })
+
+
+            const xAxis = d3.axisBottom(xScale);
+
+            svg.append("g")
+                .attr("transform", "translate(0, " + (h - padding) + ")")
+                .attr("id", "x-axis")
+                .call(xAxis)
+
+            const yAxis = d3.axisLeft(yScale)
+
+            svg.append("g")
+                .attr("transform", `translate(${padding}, 0)`)
+                .attr("id", "y-axis")
+                .call(yAxis)
+
+            svg.append("text")
+                .attr("class", "y-label")
+                .attr("text-anchor", "end")
+                .attr("y", padding + 15)
+                .attr("x", -padding)
+                .attr("transform", "rotate(-90)")
+                .text("Gross Domestic Product")
+
+            svg.append("text")
+                .attr("x", (w/2))
+                .attr("y", 0 + (padding/2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "28px")
+                .style("text-decoration", "underline")
+                .text("United States GDP")
+        }
+
+        fetch("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json")
+            .then(response => response.json())
+            .then(data => {
+                dataUpdate(data)
+            })
+    </script>
+
+</head>
+
+<body>
+    <div id="title"></div>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+</body>
+</html>

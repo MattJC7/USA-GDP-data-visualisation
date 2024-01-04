@@ -1,0 +1,33 @@
+body {
+    background-color: grey
+}
+
+svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    background-color: white;
+    box-shadow: 0 0 20px black;
+}
+
+.bar:hover {
+    fill: white;
+  }
+
+.tooltip {
+    position: relative;
+}
+
+#tooltip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background-color: white;
+    width: 110px;
+    height: 40px;
+    box-shadow: 0 0 5px black;
+    border-radius: 3px;
+    
+}
